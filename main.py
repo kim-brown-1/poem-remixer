@@ -5,10 +5,11 @@ import requests
 
 num_poets = 1
 num_poems = 2
-poem_num_lines = 3
+max_lines = 5
 titles_url = "https://poetrydb.org/author/{}/title"
 poem_text_url = "https://poetrydb.org/title/{}/lines.json"
 poets_url = "https://poetrydb.org/author"
+saved = False  # prevents saving poem more than once
 
 
 def get_poets() -> list:
@@ -28,25 +29,24 @@ poet_options = get_poets()
 
 
 def get_poem() -> str:
-    print(poet_choice.get())
+    global saved
     all_lines = []
     for poet in [poet_choice.get()]:  # TODO: adjust when supporting more than one poet
         titles = get_titles(poet)
-        print("Found {} titles for this author. Randomly picking {}\n".format(len(titles), num_poems))
+        # print("Found {} titles for this author. Randomly picking {}\n".format(len(titles), num_poems))
         rand_poems = pick_from_list(titles, num_poems)
         for title in rand_poems:
             lines = get_poem_lines(title)
             all_lines = all_lines + lines
-    result = pick_from_list(all_lines, poem_num_lines)
+    result = pick_from_list(all_lines, int(num_lines.get()[0]))
     clean_output_lines(result)
-    print(result)
+    saved = False
     return '\n\n'.join(result)
 
 
 def get_titles(poet) -> list:
     resp = requests.get(titles_url.format(poet))
     if resp.status_code != 200:
-        print("Request to get titles returned status {}, please try again.".format(resp.status_code))
         return []
 
     titles = []
@@ -92,17 +92,30 @@ def show_poem():
 
 
 def save():
+    global saved
+    if saved:
+        return
     with open('created.txt', 'a') as f:
         f.write("{}\n\n--{}\n\n\n\n\n\n".format(poem_text.get(), poet_choice.get()))
         f.close()
+    saved = True
 
 
 window = tk.Tk()
 window.title("Poem Remixer")
-window.geometry("400x800")
+window.geometry("800x800")
 poet_choice = tk.StringVar()
 poet_choice.set("Ambrose Bierce")
 poem_text = tk.StringVar()
+
+num_lines = tk.StringVar()
+num_lines.set("3 lines")
+line_number_options = ["1 line"]
+for i in range(2, max_lines+1):
+    line_number_options.append("{} lines".format(i))
+
+num_lines_dropdown = tk.OptionMenu(window, num_lines, *line_number_options)
+num_lines_dropdown.grid(row=0, column=1)
 
 poem_frame = tk.Frame(window, padx=200, width=400, height=400, highlightbackground="blue", highlightthickness=2)
 poem_frame.grid(row=1, column=0)
@@ -130,4 +143,8 @@ save_button = tk.Button(
     fg="black",
 )
 save_button.grid(row=3, column=0)
-window.mainloop()  # listen for events
+
+try:
+    window.mainloop()  # listen for events
+except KeyboardInterrupt:
+    print("Exiting.")
