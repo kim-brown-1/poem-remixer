@@ -32,12 +32,11 @@ def get_titles(poet) -> list:
     return titles
 
 
-def get_poem(num_poems, num_lines: int, poet_choice: str) -> str:
+def get_poem(num_poems, num_lines: int, poet_choices: list) -> str:
     global saved
     all_lines = []
-    for poet in [poet_choice]:  # TODO: adjust when supporting more than one poet
+    for poet in poet_choices:
         titles = get_titles(poet)
-        # print("Found {} titles for this author. Randomly picking {}\n".format(len(titles), num_poems))
         rand_poems = pick_from_list(titles, num_poems)
         for title in rand_poems:
             lines = get_poem_lines(title)
@@ -45,7 +44,8 @@ def get_poem(num_poems, num_lines: int, poet_choice: str) -> str:
     result = pick_from_list(all_lines, num_lines)
     clean_output_lines(result)
     saved = False
-    return '\n\n'.join(result)
+    poem_text = '\n\n'.join(result)
+    return "{}\n\n\n--{}, {}".format(poem_text, poet_choices[0], poet_choices[1])  # TODO: support arbitrary num authors
 
 
 # pick_from_list: returns cnt unique random items in the list
@@ -77,7 +77,7 @@ def filter_poem_lines(lines: list) -> list:
     output = []
     for line in lines:
         stripped_line = line.strip()
-        if len(stripped_line) > 1:
+        if len(stripped_line) > 5:  # filter out most roman numerals
             output.append(stripped_line)
 
     return output
@@ -88,6 +88,6 @@ def save(poem_text, poet: str):
     if saved:
         return
     with open('created.txt', 'a') as f:
-        f.write("{}\n\n--{}\n\n\n\n\n\n".format(poem_text, poet))
+        f.write("{}\n--------------\n".format(poem_text, poet))
         f.close()
     saved = True
