@@ -12,8 +12,16 @@ poets_url = "https://poetrydb.org/author"
 
 
 def get_poets() -> list:
-    resp = requests.get(poets_url).json()  # TODO: handle non-200
-    return resp["authors"]
+    resp = requests.get(poets_url)
+    if resp.status_code != 200:
+        print("Failed with status {}, please try again.".format(resp.status_code))
+        return []
+
+    resp_json = resp.json()  # TODO: catch errors
+    if "authors" not in resp_json:
+        return []
+
+    return resp_json["authors"]
 
 
 poet_options = get_poets()
@@ -35,10 +43,14 @@ def get_poem() -> str:
     return '\n\n'.join(result)
 
 
-def get_titles(poet):
-    resp = requests.get(titles_url.format(poet))  # TODO: handle non-200
+def get_titles(poet) -> list:
+    resp = requests.get(titles_url.format(poet))
+    if resp.status_code != 200:
+        print("Request to get titles returned status {}, please try again.".format(resp.status_code))
+        return []
+
     titles = []
-    for title in resp.json():
+    for title in resp.json():  # TODO: catch errors here
         titles.append(title["title"])
 
     return titles
@@ -62,7 +74,11 @@ def filter_poem_lines(lines: list) -> list:
 
 def get_poem_lines(name: str) -> list:
     resp = requests.get(poem_text_url.format(name))
-    return filter_poem_lines(resp.json()[0]["lines"])
+    if resp.status_code != 200:
+        print("Failed to get poems- please try again")
+        return []
+
+    return filter_poem_lines(resp.json()[0]["lines"])  # TODO: catch errors here
 
 
 def clean_output_lines(lines: list):
@@ -82,14 +98,20 @@ def save():
 
 
 window = tk.Tk()
-window.title("Poem Mixer :)")
+window.title("Poem Remixer")
+window.geometry("400x800")
 poet_choice = tk.StringVar()
 poet_choice.set("Ambrose Bierce")
 poem_text = tk.StringVar()
-label = tk.Label(text=poem_text.get())
-label.pack()
+
+poem_frame = tk.Frame(window, padx=200, width=400, height=400, highlightbackground="blue", highlightthickness=2)
+poem_frame.grid(row=1, column=0)
+
+label = tk.Label(window, text=poem_text.get())
+label.grid(row=1, column=0)
+
 poet_dropdown = tk.OptionMenu(window, poet_choice, *poet_options)
-poet_dropdown.pack()
+poet_dropdown.grid(row=0, column=0, pady=30)
 generate_button = tk.Button(
     text="Generate",
     command=show_poem,
@@ -98,7 +120,7 @@ generate_button = tk.Button(
     bg="white",
     fg="black",
 )
-generate_button.pack()
+generate_button.grid(row=2, column=0)
 save_button = tk.Button(
     text="Save poem",
     command=save,
@@ -107,5 +129,5 @@ save_button = tk.Button(
     bg="white",
     fg="black",
 )
-save_button.pack()
+save_button.grid(row=3, column=0)
 window.mainloop()  # listen for events
