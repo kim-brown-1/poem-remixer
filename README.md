@@ -13,9 +13,8 @@ Save the poems you like to a local txt file.
 
 
 ### Upcoming features
-- A better looking grid-based UI 
-- View saved poems in the UI
+- Aesthetic improvements to UI
 - Re-generate any line of the poem
 - Give generated poems a custom name
 - Remix poems from multiple artists
-- Select number of lines in output poem
+- Clipboard copy functionality (with citations)

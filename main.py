@@ -6,6 +6,9 @@ import requests
 num_poets = 1
 num_poems = 2
 max_lines = 5
+main_window_width = 800
+main_window_height = 800
+
 titles_url = "https://poetrydb.org/author/{}/title"
 poem_text_url = "https://poetrydb.org/title/{}/lines.json"
 poets_url = "https://poetrydb.org/author"
@@ -66,8 +69,9 @@ def pick_from_list(options: list, cnt: int) -> list:
 def filter_poem_lines(lines: list) -> list:
     output = []
     for line in lines:
-        if len(line) != 0:
-            output.append(line)
+        stripped_line = line.strip()
+        if len(stripped_line) > 1:
+            output.append(stripped_line)
 
     return output
 
@@ -83,7 +87,11 @@ def get_poem_lines(name: str) -> list:
 
 def clean_output_lines(lines: list):
     for i in range(len(lines)):
-        lines[i] = lines[i].replace("\xad", "- ")
+        lines[i] = lines[i].replace("\xad", "- ").replace("\"", "")
+    last_line = lines[len(lines)-1]
+    last_char = last_line[len(last_line)-1]
+    if last_char == "," or last_char == ";":
+        lines[len(lines)-1] = last_line[:-1]
 
 
 def show_poem():
@@ -103,7 +111,7 @@ def save():
 
 window = tk.Tk()
 window.title("Poem Remixer")
-window.geometry("800x800")
+window.geometry("{}x{}".format(main_window_width, main_window_height))
 poet_choice = tk.StringVar()
 poet_choice.set("Ambrose Bierce")
 poem_text = tk.StringVar()
@@ -117,7 +125,7 @@ for i in range(2, max_lines+1):
 num_lines_dropdown = tk.OptionMenu(window, num_lines, *line_number_options)
 num_lines_dropdown.grid(row=0, column=1)
 
-poem_frame = tk.Frame(window, padx=200, width=400, height=400, highlightbackground="blue", highlightthickness=2)
+poem_frame = tk.Frame(window, width=main_window_width/2, height=main_window_height/2, highlightbackground="blue", highlightthickness=2)
 poem_frame.grid(row=1, column=0)
 
 label = tk.Label(window, text=poem_text.get())
