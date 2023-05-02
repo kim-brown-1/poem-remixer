@@ -6,24 +6,17 @@ import requests
 num_poets = 1
 num_poems = 2
 poem_num_lines = 3
-poet_options = [
-    "Ambrose Bierce",
-    "Charlotte Bronte",
-    "Edgar Allan Poe",
-    "Emily Bronte",
-    "Emily Dickinson",
-    "George Eliot",
-    "Henry David Thoreau",
-    "Jane Austen",
-    "John Keats",
-    "Jupiter Hammon",
-    "Oscar Wilde",
-    "Ralph Waldo Emerson",
-    "Walt Whitman",
-    "William Shakespeare"
-]
 titles_url = "https://poetrydb.org/author/{}/title"
 poem_text_url = "https://poetrydb.org/title/{}/lines.json"
+poets_url = "https://poetrydb.org/author"
+
+
+def get_poets() -> list:
+    resp = requests.get(poets_url).json()  # TODO: handle non-200
+    return resp["authors"]
+
+
+poet_options = get_poets()
 
 
 def get_poem() -> str:
